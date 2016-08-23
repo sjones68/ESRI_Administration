@@ -140,6 +140,7 @@ for folder in jsonResponse['folders']:
     fldResponse = urllib2.urlopen(folderUrl,parameters).read()
     fldJsonResponse = json.loads(fldResponse)
     for svc in fldJsonResponse['services']:
+
         serviceUrl = agsUrl + '/admin/services' + '/' + folder + '/' + svc['serviceName'] + '.' + svc['type']
         setSecurity (serviceUrl, username, password)
         svcResponse = urllib2.urlopen(serviceUrl,parameters).read()
@@ -166,8 +167,6 @@ for folder in jsonResponse['folders']:
         #    print agsUrl + '/admin/services' + '/' + folder + '/' + svc['serviceName'] + '.' + svc['type']
         #    print str(editResponse)
 
-
-        
 
 ##todo: close the file
 fs.close()

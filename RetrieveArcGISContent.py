@@ -125,12 +125,11 @@ def mapPortalUsers(allUserList):
             cnt += 1
             if not user in adminUserList:
                 deleteUserURL = portalUrl + 'sharing/rest/community/users/' + user  + '/delete'     
-                #setSecurity (deleteUserURL, username, password)
-                #parameter = urllib.urlencode({'f' : 'json'})
-                #deleteUserResponse = urllib2.urlopen(deleteUserURL, parameter).read()
-                #deleteUserJson = json.loads(deleteUserResponse)
-                print deleteUserURL
-
+                setSecurity (deleteUserURL, username, password)
+                parameter = urllib.urlencode({'f' : 'json'})
+                deleteUserResponse = urllib2.urlopen(deleteUserURL, parameter).read()
+                deleteUserJson = json.loads(deleteUserResponse)
+                print deleteUserJson
 
     #close the File
     fs.close()
@@ -194,6 +193,7 @@ def generateUsers(folder):
 
 #todo: generate Content
 def generateContent(folder):
+    #todo: output List
     start = 1
     f = 1
     num = 100
@@ -209,8 +209,12 @@ def generateContent(folder):
     #print str(total) + ' content'
 
     #todo: prepare file for writing
-    fs = open(folder + os.path.sep + "PortalContent.csv", mode = "w+")
-    fs.write("Owner,Title,Created,Modified,URL,NumViews,Type\n")
+    #fs = open(folder + os.path.sep + "PortalContent.csv", mode = "w+")
+    #fs.write("Owner,Title,Created,Modified,URL,NumViews,Type\n")
+    fsH = open(folder + os.path.sep + "PortalContentHosted.csv", mode = "w+")
+    fsH.write("Owner,Title,Created,Modified,URL,NumViews,Type\n")
+    fsNH = open(folder + os.path.sep + "PortalContentNonHosted.csv", mode = "w+")
+    fsNH.write("Owner,Title,Created,Modified,URL,NumViews,Type\n")
     while f < total + 1: 
         parameters = urllib.urlencode({ 'q' : query, 'f' : 'json', 'start' : start, 'num' : num}) #remember to generate json content
         response = urllib2.urlopen(url, parameters ).read()
@@ -220,13 +224,20 @@ def generateContent(folder):
             created = time.strftime('%d/%m/%Y', time.gmtime(i['created']/1000))
             modified = time.strftime('%d/%m/%Y', time.gmtime(i['modified']/1000))
             ##print to file
-            if string.find(i['owner'], 'esri') == -1:
+            #if string.find(i['owner'], 'esri') == -1:
+            #    serviceInfo = (i['owner'] + ',\"' + i['title'] + '\",' + created + ',' + modified + ',' + str(i['url']) + ',' + str(i['numViews']) + ',' + i['type'] + '\n' )
+            #    fs.write(serviceInfo)
+            if string.find(i['owner'], 'esri') == -1 and str(i['url']) == 'None':
                 serviceInfo = (i['owner'] + ',\"' + i['title'] + '\",' + created + ',' + modified + ',' + str(i['url']) + ',' + str(i['numViews']) + ',' + i['type'] + '\n' )
-                fs.write(serviceInfo)
-
+                fsNH.write(serviceInfo)
+            if string.find(i['owner'], 'esri') == -1 and str(i['url']) <> 'None':
+                serviceInfo = (i['owner'] + ',\"' + i['title'] + '\",' + created + ',' + modified + ',' + str(i['url']) + ',' + str(i['numViews']) + ',' + i['type'] + '\n' )
+                fsH.write(serviceInfo)
             f+=1
         start += 100
-    fs.close()
+    #fs.close()
+    fsH.close()
+    fsNH.close()
 
 
 #todo: Get All Group Users
@@ -483,6 +494,7 @@ token = generateTokenPortal(username, password, portalUrl, 'sharing/rest/generat
 #print "\ntodo: generate Content"
 #generateContent(folder)
 
+
 #todo: generate Users
 print "\ntodo: generate Users"
 allPortalUsers = generateUsers(folder)
@@ -515,8 +527,8 @@ mapPortalUsers(allUserList)
 
 
 #todo: delete Portal Content
-print "\ntodo: delete Portal Content"
-deletePortalContent(folder)
+#print "\ntodo: delete Portal Content"
+#deletePortalContent(folder)
 
 
 #todo: get Portal Configuration
