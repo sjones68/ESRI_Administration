@@ -1,29 +1,44 @@
-#useArcGISServer.py
+#useArcGISAdminServer.py
 
-#Todo:
-#ESRI ArcGIS Server Loggging
+#TOOL PURPOSE
+#Report an Edit the current Services hosted in an ESRI ArcGIS Server environment
 
-#Functions Implemented
-#generateTokenPortal
-#setSecurity
-#generateUsers
-#deleteUsers
-#generateContent
-#transferOwnership
-#transferGroup
-#getPortalConfig
+#FUNCTIONS IMPLEMENTED
+#1. setSecurity
+#2. generateToken
+#3. editService
 
+#PYTHON FRAMEWORK
+#This script is built and supported for Python 2.7
 
-#Purpose: Perform ArcGIS Server and ArcGIS Portal Logging
+#DEPENDENCY MODULES
+#1. ntlm - windows authentication security module. https://github.com/trustrachel/python-ntlm3
+
+#FRAMEWORK:
+#Process:
+#START HERE
+#get ArcGIS Server from User
+#get ESRI Portal from User
+#user Authenticates to Portal
+#specify UAT/PROD directory for writing
+#...
+#functions are toggled for self service reporting
+#NB Need to edit the service paramters in editService module - commented out for now
+
+#AUTHORING
+#Susan Jones
+#25 August 2016
+#sjones.gis@gmail.com
+
 
 #import Modules
 import json, string, os, xml
 from urlparse import urlparse, urlunparse
 from ntlm import HTTPNtlmAuthHandler
 
+
 #import Modules
 import urllib, urllib2, sys, os, time, unicodedata, codecs, getpass
-
 
 #set Security
 def setSecurity (url, username, password):    
@@ -32,7 +47,6 @@ def setSecurity (url, username, password):
     auth_NTLM = HTTPNtlmAuthHandler.HTTPNtlmAuthHandler(passman)
     opener = urllib2.build_opener(auth_NTLM)
     urllib2.install_opener(opener)
-
 
 #todo: generate Token
 def generateToken(username, password, agsUrl):
@@ -58,7 +72,6 @@ def generateToken(username, password, agsUrl):
 #todo: edit Service
 def editService(agsUrl):
     print agsUrl
-
 
 
 ##todo: START HERE - it all starts here
