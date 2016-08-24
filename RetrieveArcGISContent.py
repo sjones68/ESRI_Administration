@@ -1,22 +1,45 @@
 #RetrieveArcGISContent.py
 
-#Todo:
-#ESRI Poral Content Loggging
+#TOOL PURPOSE
+#ESRI Portal Content Reporting and Management
 
-#Functions Implemented
-#generateTokenPortal
-#setSecurity
-#generateUsers
-#deleteUsers
-#generateContent
-#transferOwnership
-#transferGroup
-#getPortalConfig
+#ABSTRACT
+#This script contains a numner of function for reporting the user, group and content of ArcGIS Server 
+#when managed using Portal. 
 
+#Specifically, it is desgined to access the Portal using the REST API Web Service called from within 
+#the organisations corporate network 
 
-#Authoring Information
+#FUNCTIONS IMPLEMENENTED
+#1. generateTokenPortal
+#2. setSecurity
+#3. mapPortalUsers
+#4. generateUsers
+#5. generateContent
+#6. generateAllGroupUsers
+#7. generateGroups
+#8. getPortalConfig
+#9. deletePortalContent
+
+#PYTHON FRAMEWORK
+#This script is built and supported for Python 2.7
+
+#DEPENDENCY MODULES
+#1. ntlm - windows authentication security module. https://github.com/trustrachel/python-ntlm3
+
+#FRAMEWORK:
+#Process:
+#START HERE
+#get Portal Server from User
+#user Authenticates to Portal
+#specify UAT/PROD directory for writing
+#...
+#functions are toggled for self service reporting
+
+#AUTHORING
 #Susan Jones
-#March 2016
+#25 August 2016
+#sjones.gis@gmail.com
 
 
 #Todo: import Modules
@@ -48,7 +71,7 @@ def generateTokenPortal(username, password, portalUrl, callEnd):
     except ValueError, e:
         print 'An unspecified error occurred.'
         print e
-
+        arcpy
 
 #todo: set Security
 def setSecurity (url, username, password):    
@@ -125,11 +148,11 @@ def mapPortalUsers(allUserList):
             cnt += 1
             if not user in adminUserList:
                 deleteUserURL = portalUrl + 'sharing/rest/community/users/' + user  + '/delete'     
-                setSecurity (deleteUserURL, username, password)
-                parameter = urllib.urlencode({'f' : 'json'})
-                deleteUserResponse = urllib2.urlopen(deleteUserURL, parameter).read()
-                deleteUserJson = json.loads(deleteUserResponse)
-                print deleteUserJson
+                #setSecurity (deleteUserURL, username, password)
+                #parameter = urllib.urlencode({'f' : 'json'})
+                #deleteUserResponse = urllib2.urlopen(deleteUserURL, parameter).read()
+                #deleteUserJson = json.loads(deleteUserResponse)
+                #print deleteUserJson
 
     #close the File
     fs.close()
@@ -209,8 +232,8 @@ def generateContent(folder):
     #print str(total) + ' content'
 
     #todo: prepare file for writing
-    #fs = open(folder + os.path.sep + "PortalContent.csv", mode = "w+")
-    #fs.write("Owner,Title,Created,Modified,URL,NumViews,Type\n")
+    fs = open(folder + os.path.sep + "PortalContent.csv", mode = "w+")
+    fs.write("Owner,Title,Created,Modified,URL,NumViews,Type\n")
     fsH = open(folder + os.path.sep + "PortalContentHosted.csv", mode = "w+")
     fsH.write("Owner,Title,Created,Modified,URL,NumViews,Type\n")
     fsNH = open(folder + os.path.sep + "PortalContentNonHosted.csv", mode = "w+")
@@ -224,9 +247,9 @@ def generateContent(folder):
             created = time.strftime('%d/%m/%Y', time.gmtime(i['created']/1000))
             modified = time.strftime('%d/%m/%Y', time.gmtime(i['modified']/1000))
             ##print to file
-            #if string.find(i['owner'], 'esri') == -1:
-            #    serviceInfo = (i['owner'] + ',\"' + i['title'] + '\",' + created + ',' + modified + ',' + str(i['url']) + ',' + str(i['numViews']) + ',' + i['type'] + '\n' )
-            #    fs.write(serviceInfo)
+            if string.find(i['owner'], 'esri') == -1:
+                serviceInfo = (i['owner'] + ',\"' + i['title'] + '\",' + created + ',' + modified + ',' + str(i['url']) + ',' + str(i['numViews']) + ',' + i['type'] + '\n' )
+                fs.write(serviceInfo)
             if string.find(i['owner'], 'esri') == -1 and str(i['url']) == 'None':
                 serviceInfo = (i['owner'] + ',\"' + i['title'] + '\",' + created + ',' + modified + ',' + str(i['url']) + ',' + str(i['numViews']) + ',' + i['type'] + '\n' )
                 fsNH.write(serviceInfo)
@@ -235,7 +258,7 @@ def generateContent(folder):
                 fsH.write(serviceInfo)
             f+=1
         start += 100
-    #fs.close()
+    fs.close()
     fsH.close()
     fsNH.close()
 
@@ -457,10 +480,12 @@ def deletePortalContent(folder):
         start += 100
     fs.close()
 
-##todo: START HERE
 
+
+
+#todo: START HERE
 #place a banner in the code
-print '***\nManage Portal Content\nSusan Jones\nAuckland Transport\n***\n'
+print '***\nESRI Portal Content Reporting and Management\nSusan Jones\n***\n'
 
 #todo: set The Portal Connections
 server = raw_input('get the portal server name:')
@@ -491,8 +516,8 @@ token = generateTokenPortal(username, password, portalUrl, 'sharing/rest/generat
 
 
 #todo: generate Content
-#print "\ntodo: generate Content"
-#generateContent(folder)
+print "\ntodo: generate Content"
+generateContent(folder)
 
 
 #todo: generate Users
