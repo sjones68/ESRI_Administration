@@ -1,5 +1,11 @@
 #sjAccessAGOL.py
 
+#purpose:
+#generate content report for arcgis online (AGOL) users
+
+#susan jones
+#22 June 2017
+
 #import Modules
 import requests, json, urllib, urllib2, getpass, datetime, time, os, io
 
@@ -42,7 +48,7 @@ password = "cha1tdb123" # getpass.getpass(prompt = 'Enter AGOL password:')
 
 
 #search parameters
-userToSearch = "onlinecontent" #raw_input('AGOL user for content search: ')
+userToSearch = "amitkokje1" #raw_input('AGOL user for content search: ')
 num = 10
 
 #log Content
@@ -191,4 +197,3 @@ print("\nelapsed " + str(end - begin))
 
 #completed
 print("\ncompleted")
-
