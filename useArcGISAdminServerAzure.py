@@ -1,4 +1,4 @@
-#useArcGISAdminServer.py
+#useArcGISAdminServerAzure.py
 
 #TOOL PURPOSE
 #Report an Edit the current Services hosted in an ESRI ArcGIS Server environment
@@ -110,6 +110,7 @@ def manifestService(serviceUrl, folder):
 
 #update ArcGIS Service Parameters
 def updateArcGISServiceParameters(serviceUrl, env):
+    print("updating "+serviceUrl)
     setSecurity (serviceUrl, username, password)
     svcResponse = urllib2.urlopen(serviceUrl,parameters).read()
     svcJsonResponse = json.loads(svcResponse)
@@ -123,7 +124,7 @@ def updateArcGISServiceParameters(serviceUrl, env):
     editResponse = urllib2.urlopen(editServiceUrl, editParameters).read()
     #todo: Update gretaer thann maxIdleTime
     #preproduction
-    if env == "uat":
+    if env in ["uat", "pp"]:
         maxUsageTime = 60
         maxIdleTime = 180
         maxWaitTime = 60
@@ -135,11 +136,9 @@ def updateArcGISServiceParameters(serviceUrl, env):
         maxIdleTime = 180
         maxWaitTime = 60
         minInstancesPerNode = 1
-        maxInstancesPerNode = 3
+        #maxInstancesPerNode = 3
     #todo: Standardise settings
     if svcJsonResponse['maxIdleTime'] <> maxIdleTime or svcJsonResponse['maxUsageTime'] <> maxUsageTime or svcJsonResponse['maxWaitTime'] <> maxWaitTime or svcJsonResponse['maxInstancesPerNode'] <> maxInstancesPerNode  or svcJsonResponse['minInstancesPerNode'] <> minInstancesPerNode:
-    #if svcJsonResponse['maxIdleTime'] > maxIdleTime:
-
         #todo: update the service parameters
         svcJsonResponse['minInstancesPerNode'] = minInstancesPerNode  #minInstancesPerNode
         svcJsonResponse['maxInstancesPerNode'] = maxInstancesPerNode  #maxInstancesPerNode
@@ -156,21 +155,29 @@ def updateArcGISServiceParameters(serviceUrl, env):
 
 ##todo: START HERE - it all starts here
 #place a banner in the code
-print '***\nManage ArcGIS Admin Server Content\nSusan Jones\nAuckland Transport\n***\n'
+print '***\nManage ArcGIS Admin Server Content in Azure\nSusan Jones\nAuckland Transport\n***\n'
 
-#todo: get the server
-server = raw_input("get the ArcGIS Server: e.g. ATALGISAU01\n")
-if server == '': server = 'ATALGISAP01'
-agsUrl = "https://" + server + ".aucklandtransport.govt.nz/arcgis"
+#get the server
+env = raw_input("get the GIS Environment: e.g. PROD/PP/TEST\n")
+u = "Susan.Jones"
+p = "Cha1tdb123"
+if string.lower(env) == 'prod':
+    server = 'maps'
+elif string.lower(env) == 'pp': 
+    server = 'ppmaps'
+elif string.lower(env) == 'test': 
+    env = "uat"
+    server = 'atwebtst01'
+    u = "SusanJones"
+    p = "Cha1tdb123"
+else: 
+    server = 'maps'
+agsUrl = "https://"+server+".at.govt.nz/arcgis"
 
 #todo: get portal and environments
-server = raw_input("get the Portal Server: e.g. ATALGISPSU01\n")
-if server == '': server = 'ATALGISAP01'
-portalUrl = "https://" + server + ".aucklandtransport.govt.nz/arcgis"
-envList = ['UAT', 'PROD']
-selEnv = raw_input(' or '.join(envList) + ' ?\n')
+portalUrl = "https://" + server + ".at.govt.nz/arcgis"
 
-#todo: get The User Credentials
+#get the windows domain credentials
 domain = 'TRANSPORT\\'
 username = domain + getpass.getuser()
 password = getpass.getpass(prompt = 'Enter password for ' + username + ':')
@@ -178,7 +185,7 @@ password = getpass.getpass(prompt = 'Enter password for ' + username + ':')
 #todo: generate ArcGIS admin Token
 url = portalUrl + '/sharing/rest/generateToken?'
 setSecurity (url, username, password)
-token = generateToken(username, password, url)
+token = generateToken(u, p, url)
 
 #todo: get The Services at the root level
 n = 0
@@ -186,21 +193,20 @@ n = 0
 #generate Logging
 print('ArcGIS Server\t'+agsUrl+'\n')
 
-#todo: write to File
-if string.lower(selEnv) == "uat":
-    folder = "C:\\Users\\Susanjon1\\OneDrive - Auckland Transport\\GIS\\UAT"
-if string.lower(selEnv) == "prod":
-    folder = "C:\\Users\\Susanjon1\\OneDrive - Auckland Transport\\GIS\\PROD"
-#folder = '\\\\atalgisau01\\ADMIN\\Portal User Content\\' + selEnv
-fs = open(folder + os.path.sep + 'ArcGISContent.csv', 'w+')
+#write arcgis service info to a file
+folder = r"C:\Users\Susanjon1\OneDrive - Auckland Transport\GIS Azure"
+fileAGSToWrite = folder+os.path.sep+env+os.path.sep+'ArcGISContent.csv'
+print(fileAGSToWrite)
+fs = open(fileAGSToWrite, 'w+')
 fs.write('Folder,serviceName,type,minInstancesPerNode,maxInstancesPerNode,maxWaitTime,maxUsageTime,maxIdleTime\n')
 
-#process Datasets
-fds = open(folder + os.path.sep + 'ArcGISDatasets.csv', 'w+')
+#wrte data sources to a file
+fileDSSToWrite = folder+os.path.sep+env+os.path.sep+'ArcGISDatasets.csv'
+fds = open(fileDSSToWrite, 'w+')
 fds.write('Dataset,Folder,Service,onPremisePath,clientName,ServerPath\n')
 
 #todo: get and process Arcgis Services
-setSecurity (agsUrl + '/admin/services', username, password)
+setSecurity (agsUrl + '/admin/services', u, p)
 parameters = urllib.urlencode({'f' : 'json', 'token': token})
 rootUrl = agsUrl + '/admin/services'
 response = urllib2.urlopen(rootUrl,parameters).read()
@@ -219,18 +225,16 @@ for svc in jsonResponse['services']:
     #todo: manifest The Service
     try:    
         manifestService(serviceUrl, '') 
-    except: 
-        print("error:\t"+serviceUrl)
-    #todo: update The service definition
+    except: print("error:\t"+serviceUrl)
+    ##todo: update The service definition
     #try:    
-    #    updateArcGISServiceParameters(serviceUrl, string.lower(selEnv))
-    #except: 
-    #    print("cannot Update:\t"+serviceUrl)
+    #    updateArcGISServiceParameters(serviceUrl, string.lower(env))
+    #except: print("cannot Update:\t"+serviceUrl)
 
 #todo: get The Folders
 folders = []
 for f in jsonResponse['folders']: 
-    if f <> 'Hosted': folders.append(f)
+    if f not in ['Hosted', 'System', 'Utilities']: folders.append(f)
 
 #todo: loop Though the Folders and Map Services
 for f in folders:
@@ -251,13 +255,11 @@ for f in folders:
         #todo: manifest The Service
         try:    
             manifestService(serviceUrl, f) 
-        except: 
-            print("error:\t"+serviceUrl)
+        except:             print("error:\t"+serviceUrl)
         #todo: update The service definition
         #try:    
-        #    updateArcGISServiceParameters(serviceUrl, string.lower(selEnv))
-        #except: 
-        #    print("cannot Update:\t"+serviceUrl)
+        #    updateArcGISServiceParameters(serviceUrl, string.lower(env))
+        #except: print("cannot Update:\t"+serviceUrl)
 
 ##todo: close the file
 fs.close()

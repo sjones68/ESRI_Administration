@@ -41,14 +41,14 @@ begin = datetime.datetime.now()
 
 #collect Parameters
 print("\ncollect Parameters")
-logFileDir = "\\\\atalgisau01\\admin\\Portal User Content\\AGOL"
+logFileDir = "c:\\Temp\\AGOL"
 base = "https://www.arcgis.com/sharing"
 username = "sjonesAT" #raw_input('Administrative AGOL user: ')
 password = "cha1tdb123" # getpass.getpass(prompt = 'Enter AGOL password:')
 
 
 #search parameters
-userToSearch = "amitkokje1" #raw_input('AGOL user for content search: ')
+userToSearch = "ATeamGIS" #raw_input('AGOL user for content search: ')
 num = 10
 
 #log Content
